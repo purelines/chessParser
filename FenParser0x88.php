@@ -556,7 +556,7 @@ class FenParser0x88
                             }
                         }
                     }
-                    
+
                     break;
                 // Sliding pieces
                 case 0x05:
@@ -1436,6 +1436,18 @@ class FenParser0x88
     }
 
     /**
+     * Check if a move is written in Long algebraic notation
+     * Example: e2-e4 or Nb1-c3, and captures with "x": Rd3xd7
+     *
+     * @param string $move
+     * @return Boolean
+     */
+    public function isLongNotation($move)
+    {
+        return (bool) preg_match('/[K|Q|R|B|N|P]?[a-h]{1}[1-8]{1}[-|x]?[a-h]{1}[1-8]{1}/', $move);
+    }
+
+    /**
      * Make a move on the board
      * Example:
      *
@@ -1454,7 +1466,7 @@ class FenParser0x88
     public function move($move)
     {
 
-        if (is_string($move) && strlen($move) == 4) {
+        if (is_string($move) && $this->isLongNotation($move)) {
             $move = $this->getFromAndToByLongNotation($move);
 
         } else if (is_string($move)) {
