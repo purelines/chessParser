@@ -5,7 +5,8 @@ class MoveBuilder
     private $moves = array();
     private $moveReferences = array();
     private $pointer = 0;
-    private $currentIndex = 0;
+    private $currentIndex = 0; // ToDo: looks unused
+    private $moveNumber = '';
 
     public function __construct()
     {
@@ -23,11 +24,21 @@ class MoveBuilder
     private function addMove($move)
     {
         if (!$this->isChessMove($move)) {
+            if (preg_match('/\\$[0-9]+/s', $move)) {
+                $this->moveReferences[$this->pointer][$this->getIndex()]['mark'] = $this->decodeMark($move);
+            }
+            if (preg_match('/_[0-9]+?\.+_/s', $move)) {
+                $this->moveNumber = str_replace('_', '', $move);
+            }
             return;
         }
         $move = preg_replace("/^([a-h])([18])([QRNB])$/", "$1$2=$3", $move);
         $this->moveReferences[$this->pointer][] = array(CHESS_JSON::MOVE_NOTATION => $move);
         $this->currentIndex++;
+        if (!empty($this->moveNumber)) {
+            $this->moveReferences[$this->pointer][$this->getIndex()]['num'] = $this->moveNumber;
+            $this->moveNumber = '';
+        }
     }
 
     private function isChessMove($move)
@@ -53,7 +64,7 @@ class MoveBuilder
             return;
         }
         #$index = max(0,count($this->moveReferences[$this->pointer])-1);
-        $index = count($this->moveReferences[$this->pointer]) - 1;
+        $index = $this->getIndex();
 
 
         if (strstr($comment, '[%clk')) {
@@ -76,6 +87,11 @@ class MoveBuilder
         $comment = preg_replace('/\[%' . CHESS_JSON::PGN_KEY_ACTION_CLR_ARROW . '[^\]]+?\]/si', '', $comment);
         $comment = preg_replace('/\[%' . CHESS_JSON::PGN_KEY_ACTION_HIGHLIGHT . '[^\]]+?\]/si', '', $comment);
         $comment = preg_replace('/\[%' . CHESS_JSON::PGN_KEY_ACTION_CLR_HIGHLIGHT . '[^\]]+?\]/si', '', $comment);
+
+        // Temporary clean language ToDo: finish
+        $comment = preg_replace("/\s*\|\s*en:\s*[^}]*/m", '', $comment);
+        $comment = preg_replace("/\s*ru:\s*/m", '', $comment);
+
         $comment = trim($comment);
 
         if (empty($comment)) return;
@@ -199,7 +215,7 @@ class MoveBuilder
 
     public function startVariation()
     {
-        $index = count($this->moveReferences[$this->pointer]) - 1;
+        $index = $this->getIndex();
         if (!isset($this->moveReferences[$this->pointer][$index][CHESS_JSON::MOVE_VARIATIONS])) {
             $this->moveReferences[$this->pointer][$index][CHESS_JSON::MOVE_VARIATIONS] = array();
         }
@@ -218,5 +234,44 @@ class MoveBuilder
     public function getMoves()
     {
         return $this->moves;
+    }
+
+    private function getIndex() {
+        return count($this->moveReferences[$this->pointer]) - 1;
+    }
+
+    public function decodeMark($mark) {
+        $mark .= ' ';
+        $replace  = [
+            '$1 ' => '!',
+            '$2 ' => '?',
+            '$3 ' => '!!',
+            '$4 ' => '??',
+            '$5 ' => '!?',
+            '$6 ' => '?!',
+            '$7 ' => '□',
+            '$8 ' => '□',
+            '$10 ' => '=',
+            '$11 ' => '=',
+            '$13 ' => '∞',
+            '$14 ' => '+/=',
+            '$15 ' => '=/+',
+            '$16 ' => '±',
+            '$17 ' => '∓',
+            '$18 ' => '+-',
+            '$19 ' => '-+',
+            '$22 ' => '⊙',
+            '$23 ' => '⊙',
+            '$36 ' => '↑',
+            '$37 ' => '↑',
+            '$40 ' => '→',
+            '$41 ' => '→',
+            '$44 ' => '∞/=',
+            '$132 ' => '⇄',
+            '$138 ' => '⊕',
+            '$140 ' => '∆',
+            '$146 '=> 'N',
+        ];
+        return str_replace(array_keys($replace), array_values($replace), $mark);
     }
 }

@@ -57,12 +57,12 @@ class PgnGameParser{
     }
 
     private function getMetadataKeyAndValue($metadataString){
-        $metadataString = preg_replace("/[\[\]]/s", "", $metadataString);
+        $metadataString = preg_replace('/[\[\]]/s', '', $metadataString);
         $metadataString = str_replace('"', '', $metadataString);
-        $tokens = explode(" ", $metadataString);
+        $tokens = explode(' ', $metadataString);
 
         $key = $tokens[0];
-        $value = implode(" ", array_slice($tokens, 1));
+        $value = implode(' ', array_slice($tokens, 1));
         $ret = array('key' => $this->getValidKey($key),  'value' => $value );
         return $ret;
     }
@@ -112,7 +112,7 @@ class PgnGameParser{
     }
 
     private function getMovesAndComments(){
-        $ret = preg_split("/({|})/s", $this->getMoveString(), 0, PREG_SPLIT_DELIM_CAPTURE);
+        $ret = preg_split('/({|})/s', $this->getMoveString(), 0, PREG_SPLIT_DELIM_CAPTURE);
         if(!$ret[0]){
             $ret = array_slice($ret, 1);
         }
@@ -120,24 +120,23 @@ class PgnGameParser{
     }
 
     private function getMovesAndVariationFromString($string){
-        $string = " ". $string;
+        $string = ' ' . $string;
 
-        $string = preg_replace("/[0-9]+?\./s", "", $string);
-        $string = str_replace(" ..", "", $string);
-        $string = str_replace("  ", " ", $string);
+        $string = preg_replace('/[0-9]+?\.+/s', '_$0_', $string);
+        $string = str_replace('  ', ' ', $string);
         $string = trim($string);
 
-        return preg_split("/(\(|\))/s", $string, 0, PREG_SPLIT_DELIM_CAPTURE);
+        return preg_split('/(\(|\))/s', $string, 0, PREG_SPLIT_DELIM_CAPTURE);
     }
 
     private function getMoveString() {
-        $tokens = preg_split("/\]\n\n/s", $this->pgnGame);
+        $tokens = preg_split('/\]\n\n/s', $this->pgnGame);
         if(count($tokens) < 2){
-            return "";
+            return '';
         }
         $gameData = $tokens[1];
-        $gameData = str_replace("\n", " ", $gameData);
-        $gameData = preg_replace("/(\s+)/", " ", $gameData);
+        $gameData = str_replace("\n", ' ', $gameData);
+        $gameData = preg_replace('/(\s+)/', ' ', $gameData);
         return trim($gameData);
     }
 }
