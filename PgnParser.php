@@ -10,6 +10,7 @@ class PgnParser
     private $pgnGameParser;
     private $_fullParsing = true;
     private $pgnIsValid = true;
+    private $moveIndex = 1;
 
     public function __construct($pgnFile = "", $fullParsing = true)
     {
@@ -172,12 +173,11 @@ class PgnParser
 
     }
 
-
-    public function getGameByIndex($index)
+    public function getGameByIndex($index, $short = false)
     {
         $games = $this->getUnparsedGames();
         if (count($games) && count($games) > $index) {
-            return $this->getParsedGame($games[$index]);
+            return $short ? $this->getParsedGameShort($games[$index]) : $this->getParsedGame($games[$index]);
         }
         return null;
     }
@@ -209,29 +209,28 @@ class PgnParser
         return $ret;
     }
 
-
     private function toShortVersion($branch)
     {
         foreach ($branch as &$move) {
 
             if (isset($move["from"])) {
-                $move["n"] = $move["from"] . $move["to"];
-                unset($move["fen"]);
-                unset($move["from"]);
-                unset($move["to"]);
-                if (isset($move["variations"])) {
-                    $move["v"] = array();
-                    foreach ($move["variations"] as $variation) {
-                        $move["v"][] = $this->toShortVersion($variation);
+                // $move["n"] = $move["from"] . $move["to"];
+                // unset($move["fen"]);
+                $move['id'] = $this->moveIndex++;
+                unset($move['from']);
+                unset($move['to']);
+                if (isset($move['variations'])) {
+                    $move['v'] = array();
+                    foreach ($move['variations'] as $variation) {
+                        $move['v'][] = $this->toShortVersion($variation);
                     }
                 }
-                unset($move["variations"]);
+                unset($move['variations']);
             }
 
         }
         return $branch;
     }
-
 
     private function getParsedGame($unParsedGame)
     {
