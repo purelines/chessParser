@@ -25,7 +25,10 @@ class MoveBuilder
     {
         if (!$this->isChessMove($move)) {
             if (preg_match('/\\$[0-9]+/s', $move)) {
-                $this->moveReferences[$this->pointer][$this->getIndex()]['mark'] = $this->decodeMark($move);
+                $this->moveReferences[$this->pointer][$this->getIndex()]['mark'][] = $this->decodeMark($move);
+            }
+            if (in_array($move, ['1-0', '0-1', '*', '1/2-1/2'])) {
+                $this->moveReferences[$this->pointer][0]['result'] = $move;
             }
             if (preg_match('/_[0-9]+?\.+_/s', $move)) {
                 $this->moveNumber = str_replace('_', '', $move);

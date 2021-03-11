@@ -283,4 +283,19 @@ class PgnParser
         }
         return $ret;
     }
+
+    public function getParsedGameFromString($fen, $unparsedGame)
+    {
+        $pgn = "[FEN \"$fen\"]\n\n$unparsedGame";
+        $this->pgnContent = $pgn;
+        $pgn = $this->cleanPgn();
+        $this->pgnGameParser->setPgn($pgn);
+        $ret = $this->pgnGameParser->getParsedData();
+        if ($this->fullParsing()) {
+            $ret = $this->gameParser->getParsedGame($ret, true);
+            $moves = &$ret["moves"];
+            $moves = $this->toShortVersion($moves);
+        }
+        return $ret;
+    }
 }
