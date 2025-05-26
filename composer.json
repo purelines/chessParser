@@ -2,6 +2,9 @@
     "name": "purelines/chessparser",
     "description": "PGN to PHP array parser PHP class for conversion of Chess PGN files to PHP array or JSON.",
     "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
       "phpunit/phpunit" : "^8.0"
     },
     "autoload": {
